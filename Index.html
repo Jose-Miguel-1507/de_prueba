@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor Estilo Spotify</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #FFFFFF;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .player-container {
+            width: 350px;
+            background-color: #1E1E1E;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .album-cover {
+            width: 140px;
+            height: 140px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .song-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .song-artist {
+            font-size: 16px;
+            color: #B3B3B3;
+            margin: 0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #FFFFFF;
+            cursor: pointer;
+            font-size: 30px;
+            margin: 0 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            background-color: #B3B3B3;
+            outline: none;
+            margin: 10px 0;
+        }
+
+        .lyrics-container {
+            background-color: #2A2A2A;
+            padding: 6px;
+            border-radius: 8px;
+            overflow-y: auto;
+            max-height: 241px;
+            width: 100%;
+            margin-top: 10px;
+            color: #FFFFFF;
+            font-size: 14px;
+            text-align: center;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="player-container">
+    <!-- Imagen de la carátula -->
+    <div id="album-cover" class="album-cover" style="background-image: url('default-cover.jpg');"></div> 
+    
+    <!-- Información de la canción -->
+    <div class="song-info">
+        <div class="song-title" id="song-title">Título de la Canción</div>
+        <div class="song-artist" id="song-artist">Artista</div>
+    </div>
+    
+    <!-- Reproductor de audio (invisible) -->
+    <audio id="audio-player"></audio>
+
+    <!-- Controles de reproducción -->
+    <div class="controls">
+        <button id="prev-btn" class="control-btn"><i class="fas fa-step-backward"></i></button>
+        <button id="play-btn" class="control-btn"><i class="fas fa-play"></i></button>
+        <button id="next-btn" class="control-btn"><i class="fas fa-step-forward"></i></button>
+    </div>
+
+    <!-- Barra de progreso -->
+    <input type="range" id="progress-bar" class="progress-bar" value="0" max="100">
+    
+    <!-- Contenedor de la letra de la canción -->
+    <div class="lyrics-container" id="lyrics">
+        Aquí se mostrará la letra de la canción...
+    </div>
+</div>
+
+<script>
+    // Lista de canciones con imagen de portada, título, artista y letra completa
+    const songs = [
+        { 
+            title: "EL PICANTICO", 
+            artist: "Elder Dayán Díaz y Lucas Dangond", 
+            src: "Canciones/EL PICANTICO - Elder Dayán Díaz y Lucas Dangond.mp3", 
+            cover: "https://www.infobae.com/resizer/v2/KK6UT7RWHNCZDIAF6R7ASOTGLE.jpg?auth=2c104e7388a6404cd1b6334fed2d6bca87fdf1e240bffbb9cb58f6137e231bcb&smart=true&width=350&height=350&quality=85", 
+            lyrics: `Ay, yo sé que te hace bien
+Saber que eres mi traga
+Que te despierto cosas
+Como nadie ha podido
+
+Ni el novio de la escuela
+Ni tu primera traga
+Ni quien hoy te presume
+Te estremece como yo
+
+Soy el picantico que entró a tu vida
+Para sacarte de la rutina
+Antes te veían amargada y aburrida
+Y ahora te notan la sonrisa picarita
+
+Soy el picantico que te desvive
+Que te da vueltas en la cabeza
+Hoy, cuando ven que sola ríes
+Nadie sabe que es porque de mí te acuerdas
+
+Cuando te escribo rompo tu monotonía
+Y vuelves a sentirte viva nuevamente
+Te hago reír con las locuras mías
+Soy la cosquillita que da vueltas en tu vientre
+
+Soy el picantico que entró a tu vida
+Para sacarte de la rutina
+Antes te veían amargada y aburrida
+Y ahora te notan la sonrisa picarita
+
+Soy el picantico que te desvive
+Que te da vueltas en la cabeza
+Hoy, cuando ven que sola ríes
+Nadie sabe que es porque de mí te acuerdas
+
+Ay cuando te escribo rompo tu monotonía
+Y vuelves a sentirte viva nuevamente
+Te hago reír con las locuras mías
+Soy la cosquillita que da vueltas en tu vientre
+
+Yo soy el picantico que entró a tu vida
+Para sacarte de la rutina
+Antes te veían amargada y aburrida
+Y ahora te notan la sonrisa picarita
+
+Soy el picantico que te desvive
+Que te da vueltas en la cabeza
+Hoy, cuando ven que sola ríes
+Nadie sabe que es porque de mí te acuerdas` 
+        },
+        { 
+            title: "El Interior", 
+            artist: "Elder Dayán Díaz y Lucas Dangond", 
+            src: "Canciones/EL INTERIOR - Elder Dayán Díaz y Lucas.mp3", 
+            cover: "https://www.infobae.com/resizer/v2/KK6UT7RWHNCZDIAF6R7ASOTGLE.jpg?auth=2c104e7388a6404cd1b6334fed2d6bca87fdf1e240bffbb9cb58f6137e231bcb&smart=true&width=350&height=350&quality=85", 
+            lyrics: `Ay compadre Lucas
+Porque no hace una llamada
+A barranquilla donde se encuentra mi amor
+
+Uy
+
+Compadre Lucas
+Porque no hace una llamada
+A barranquilla donde se encuentra mi amor
+
+Oiga compadre
+Dígale a esa bella dama
+Ay que estoy enfermo
+Que se venga por favor
+
+Que coja el primer avión
+Que venga por la mañana
+
+Ay que coja el primer avión
+Que venga por la mañana
+Que esta desesperación
+Está acabando con mi alma
+
+Y esta desesperación
+Está acabando con mi alma
+
+Estoy que cojo carretera
+(Y pa donde sería compadre)
+
+La distancia siempre es enemiga de un hombre
+Que se encuentre enamorado de una mujer
+
+La distancia siempre es enemiga de un hombre
+Que se encuentre enamorado de una mujer
+
+Pero compadre si esa mujer no responde
+Ay yo le aseguro que me tengo que mover
+
+Me le dice por favor
+Si le llega a contestar
+
+Me le dice por favor
+Si le llega a contestar
+Que si no coge el avión
+Yo me le presento allá
+
+Y que yo hablo con el doctor
+Para que me de de alta
+Porque me hace mucha falta
+Y se me rompe el interior
+
+Ay diomedes` 
+        },
+        { 
+            title: "Canción 3", 
+            artist: "Artista 3", 
+            src: "canciones/song3.mp3", 
+            cover: "canciones/cover3.jpg", 
+            lyrics: `Letra de Canción 3...
+                      Continuación de la letra...` 
+        },
+        { 
+            title: "Canción 4", 
+            artist: "Artista 4", 
+            src: "canciones/song3.mp3", 
+            cover: "canciones/cover3.jpg", 
+            lyrics: `Letra de Canción 4...
+                      Continuación de la letra...` 
+        }
+    ];
+    
+    let currentSongIndex = 0;
+    const audioPlayer = document.getElementById('audio-player');
+    const playBtn = document.getElementById('play-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const albumCover = document.getElementById('album-cover');
+    const songTitle = document.getElementById('song-title');
+    const songArtist = document.getElementById('song-artist');
+    const lyricsContainer = document.getElementById('lyrics');
+
+    // Función para cargar la canción y actualizar la carátula, título, artista y letra
+    function loadSong(index) {
+        const song = songs[index];
+        audioPlayer.src = song.src;
+        songTitle.innerText = song.title;
+        songArtist.innerText = song.artist;
+        lyricsContainer.innerText = song.lyrics;
+        albumCover.style.backgroundImage = `url('${song.cover}')`;
+        audioPlayer.load();
+    }
+
+    // Cargar la primera canción al inicio
+    loadSong(currentSongIndex);
+
+    // Función de reproducción/pausa
+    playBtn.addEventListener('click', () => {
+        if (audioPlayer.paused) {
+            audioPlayer.play();
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        } else {
+            audioPlayer.pause();
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        }
+    });
+
+    // Función para ir a la siguiente canción
+    document.getElementById('next-btn').addEventListener('click', () => {
+        currentSongIndex = (currentSongIndex + 1) % songs.length;
+        loadSong(currentSongIndex);
+        audioPlayer.play();
+        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    });
+
+    // Función para ir a la canción anterior
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+        loadSong(currentSongIndex);
+        audioPlayer.play();
+        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    });
+
+    // Actualizar barra de progreso en reproducción
+    audioPlayer.addEventListener('timeupdate', () => {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        progressBar.value = progress;
+    });
+
+    // Saltar a un punto específico en la canción al mover la barra de progreso
+    progressBar.addEventListener('input', () => {
+        const time = (progressBar.value / 100) * audioPlayer.duration;
+        audioPlayer.currentTime = time;
+    });
+
+    // Pasar automáticamente a la siguiente canción cuando termine
+    audioPlayer.addEventListener('ended', () => {
+        document.getElementById('next-btn').click();
+    });
+</script>
+
+</body>
+</html>
